@@ -1,4 +1,5 @@
 from astprinter import Binary, Literal, Grouping, Unary, AstPrinter
+from lox import Lox
 from scanner import Scanner
 from tokens import Token, TokenType
 
@@ -12,19 +13,6 @@ lexerCases = [
     ('for', '[(TokenType.FOR, None), (TokenType.EOF, None)]'),
     ('while', '[(TokenType.WHILE, None), (TokenType.EOF, None)]'),
 ]
-
-
-def test(cases, testFn):
-    passed = 0
-    for testVal, expectedStr in cases:
-        actual = testFn(testVal)
-        print(f'Testing input:\n{testVal}')
-        if expectedStr != str(actual):
-            print(f'Failed.\nExpected:\n{expectedStr}\nActual:\n{actual}\n')
-        else:
-            passed += 1
-            print('Passed.\n')
-    print(f'{passed}/{len(cases)} passed.')
 
 
 astCases = [
@@ -46,6 +34,27 @@ astCases = [
 ]
 
 
+parserCases = [
+    ('1', '1.0'),
+    ('1==1', '(== 1.0 1.0)'),
+    ('(1)', '(group 1.0)'),
+]
+
+
+def test(cases, testFn):
+    passed = 0
+    for testVal, expectedStr in cases:
+        actual = testFn(testVal)
+        print(f'Testing input:\n{testVal}')
+        if expectedStr != str(actual):
+            print(f'Failed.\nExpected:\n{expectedStr}\nActual:\n{actual}\n')
+        else:
+            passed += 1
+            print('Passed.\n')
+    print(f'{passed}/{len(cases)} passed.')
+
+
 if __name__ == '__main__':
     test(lexerCases, lambda source: Scanner(source).scanTokens())
     test(astCases, lambda expr: AstPrinter().print(expr))
+    test(parserCases, lambda source: Lox.parseSource(source))

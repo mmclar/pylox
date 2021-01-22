@@ -1,7 +1,9 @@
 import sys
 
+from astprinter import AstPrinter
+from parser import Parser
 from scanner import Scanner
-from util import error
+from util import Errors
 
 
 class Lox:
@@ -25,16 +27,24 @@ class Lox:
                     break
                 self.run(line)
             except EOFError:
-                error('\nExiting lox')
+                print('\nExiting lox')
                 break
 
-    def run(self, source):
+    @staticmethod
+    def parseSource(source):
         tokens = Scanner(source).scanTokens()
-        print(tokens)
+        parser = Parser(tokens)
+        expression = parser.parse()
+
+        if Errors.hadError:
+            return
+
+        return AstPrinter().print(expression)
+
+    @staticmethod
+    def run(source):
+        print(Lox.parseSource(source))
 
 
 if __name__ == '__main__':
     Lox().main(sys.argv)
-
-
-

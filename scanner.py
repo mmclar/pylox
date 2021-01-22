@@ -1,7 +1,7 @@
 import string
 
 from tokens import Token, TokenType
-from util import error
+from util import Errors
 
 
 class Scanner:
@@ -46,7 +46,7 @@ class Scanner:
                 slf.advance()
 
             if slf.isAtEnd():
-                error('Unterminated string.')
+                Errors.error(slf.line, 'Unterminated string.')
                 return None
 
             # Handle closing '"'
