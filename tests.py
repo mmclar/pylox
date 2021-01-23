@@ -36,8 +36,18 @@ astCases = [
 
 parserCases = [
     ('1', '1.0'),
-    ('1==1', '(== 1.0 1.0)'),
-    ('(1)', '(group 1.0)'),
+    ('true', 'True'),
+    ('-1', '-1.0'),
+    ('(1)', '1.0'),
+    ('!true', 'False'),
+    ('!!true', 'True'),
+    ('!!0', 'False'),
+    ('!!1', 'True'),
+    ('1==1', 'True'),
+    ('1<2', 'True'),
+    ('1>2', 'False'),
+    ('2>=2', 'True'),
+    ('2<=2', 'True'),
 ]
 
 
@@ -57,4 +67,4 @@ def test(cases, testFn):
 if __name__ == '__main__':
     test(lexerCases, lambda source: Scanner(source).scanTokens())
     test(astCases, lambda expr: AstPrinter().print(expr))
-    test(parserCases, lambda source: Lox.parseSource(source))
+    test(parserCases, lambda source: Lox.interpretSource(source))

@@ -1,6 +1,7 @@
 import sys
 
 from astprinter import AstPrinter
+from interpreter import Interpreter
 from parser import Parser
 from scanner import Scanner
 from util import Errors
@@ -31,7 +32,7 @@ class Lox:
                 break
 
     @staticmethod
-    def parseSource(source):
+    def interpretSource(source):
         tokens = Scanner(source).scanTokens()
         parser = Parser(tokens)
         expression = parser.parse()
@@ -39,11 +40,11 @@ class Lox:
         if Errors.hadError:
             return
 
-        return AstPrinter().print(expression)
+        return Interpreter().interpret(expression)
 
     @staticmethod
     def run(source):
-        print(Lox.parseSource(source))
+        Lox.interpretSource(source)
 
 
 if __name__ == '__main__':
