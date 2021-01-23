@@ -1,7 +1,8 @@
 from expressions import Expr, Binary, Grouping, Literal, Unary
+from exprvisitor import ExprVisitor
 
 
-class AstPrinter:
+class AstPrinter(ExprVisitor):
     def print(self, expr: Expr):
         return expr.accept(self)
 
