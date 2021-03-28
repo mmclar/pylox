@@ -1,9 +1,11 @@
 from expressions import Binary, Grouping, Literal, Unary
+from statements import Print, Expression
+from stmtvisitor import StmtVisitor
 from tokens import TokenType
 from exprvisitor import ExprVisitor
 
 
-class Interpreter(ExprVisitor):
+class Interpreter(ExprVisitor, StmtVisitor):
     def interpret(self, expression):
         try:
             value = self.evaluate(expression)
@@ -14,6 +16,7 @@ class Interpreter(ExprVisitor):
     def evaluate(self, expression):
         return expression.accept(self)
 
+    # Implement ExprVisitor
     def visitBinaryExpr(self, expr: Binary):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
@@ -49,3 +52,12 @@ class Interpreter(ExprVisitor):
             return -float(right)
         if expr.operator.type == TokenType.BANG:
             return not right
+
+    # Implement StmtVisitor
+    def visitExpressionStmt(self, stmt: Expression):
+        self.evaluate(stmt.expression)
+
+    def visitPrintStmt(self, stmt: Print):
+        value = self.evaluate(stmt.expression)
+        print(value)
+

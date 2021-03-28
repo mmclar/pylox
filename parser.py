@@ -1,4 +1,5 @@
 from expressions import Binary, Unary, Literal, Grouping
+from statements import Stmt, Print, Expression
 from tokens import TokenType
 from util import Errors
 
@@ -12,12 +13,15 @@ class Parser:
         self.current = 0
 
     def parse(self):
-        try:
-            return self.expression()
-        except Parser.ParseError:
-            return None
+        statements = []
+        while not self.isAtEnd():
+            statements.append(self.statement())
+        return statements
 
     # Grammar rules
+    def statement(self):
+        return self.printStatement() if self.match(TokenType.PRINT) else self.expressionStatement()
+
     def expression(self):
         return self.equality()
 
@@ -130,3 +134,13 @@ class Parser:
             return
 
         self.advance()
+
+    def printStatement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return Print(value)
+
+    def expressionStatement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
+        return Expression(value)
