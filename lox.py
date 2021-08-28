@@ -8,6 +8,8 @@ from util import Errors
 
 
 class Lox:
+    interpreter = Interpreter()
+
     def main(self, args):
         if len(args) > 2:
             print('Usage: pylox [script]')
@@ -31,20 +33,21 @@ class Lox:
                 print('\nExiting lox')
                 break
 
-    @staticmethod
-    def interpretSource(source):
-        tokens = Scanner(source).scanTokens()
+    def runFile(self, path):
+        with open(path) as sourceFile:
+            self.run(sourceFile.readlines())
+
+    def run(self, source):
+        scanner = Scanner(source)
+        tokens = scanner.scanTokens()
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
 
         if Errors.hadError:
             return
 
-        return Interpreter().interpret(expression)
-
-    @staticmethod
-    def run(source):
-        Lox.interpretSource(source)
+        result = self.interpreter.interpret(statements)
+        return result
 
 
 if __name__ == '__main__':

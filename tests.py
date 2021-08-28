@@ -4,7 +4,7 @@ from scanner import Scanner
 from tokens import Token, TokenType
 
 
-lexerCases = [
+lexerCases = ('Lexer', [
     ('1', '[(TokenType.NUMBER, 1.0), (TokenType.EOF, None)]'),
     ('"A"', '[(TokenType.STRING, A), (TokenType.EOF, None)]'),
     ('3.14159', '[(TokenType.NUMBER, 3.14159), (TokenType.EOF, None)]'),
@@ -12,10 +12,10 @@ lexerCases = [
     ('someVar', '[(TokenType.IDENTIFIER, someVar), (TokenType.EOF, None)]'),
     ('for', '[(TokenType.FOR, None), (TokenType.EOF, None)]'),
     ('while', '[(TokenType.WHILE, None), (TokenType.EOF, None)]'),
-]
+])
 
 
-astCases = [
+astCases = ('AST', [
     (Binary(
         left=Literal(value=1),
         operator=Token(TokenType.PLUS, '+', None, 1),
@@ -31,40 +31,51 @@ astCases = [
             Literal(45.6)
         )
     ), '(* (- 123) (group 45.6))'),
-]
+])
 
 
-parserCases = [
-    ('1', '1.0'),
-    ('true', 'True'),
-    ('-1', '-1.0'),
-    ('(1)', '1.0'),
-    ('!true', 'False'),
-    ('!!true', 'True'),
-    ('!!0', 'False'),
-    ('!!1', 'True'),
-    ('1==1', 'True'),
-    ('1<2', 'True'),
-    ('1>2', 'False'),
-    ('2>=2', 'True'),
-    ('2<=2', 'True'),
-]
+parserCases = ('Parser', [
+    ('1;', '1.0'),
+    ('true;', 'True'),
+    ('-1;', '-1.0'),
+    ('(1);', '1.0'),
+    ('!true;', 'False'),
+    ('!!true;', 'True'),
+    ('!!0;', 'False'),
+    ('!!1;', 'True'),
+    ('1==1;', 'True'),
+    ('1<2;', 'True'),
+    ('1>2;', 'False'),
+    ('2>=2;', 'True'),
+    ('print "a"; print 1; 2<=2;', 'True'),
+])
 
 
-def test(cases, testFn):
+class Failure(Exception):
+    pass
+
+
+def test(caseDef, testFn):
     passed = 0
+    title, cases= caseDef
+    print(f'\nTesting {title}')
     for testVal, expectedStr in cases:
-        actual = testFn(testVal)
-        print(f'Testing input:\n{testVal}')
-        if expectedStr != str(actual):
-            print(f'Failed.\nExpected:\n{expectedStr}\nActual:\n{actual}\n')
-        else:
+        try:
+            print(f'Testing input: {testVal}')
+            actual = testFn(testVal)
+            if expectedStr != str(actual):
+                raise Failure()
             passed += 1
-            print('Passed.\n')
-    print(f'{passed}/{len(cases)} passed.')
+            print('Passed.')
+        except Exception as ex:
+            if isinstance(ex, Failure):
+                print(f'Failed.\nExpected:\n{expectedStr}\nActual:\n{actual}\n')
+                break
+            raise
+    print(f'*** {title}: {passed}/{len(cases)} passed.')
 
 
 if __name__ == '__main__':
     test(lexerCases, lambda source: Scanner(source).scanTokens())
     test(astCases, lambda expr: AstPrinter().print(expr))
-    test(parserCases, lambda source: Lox.interpretSource(source))
+    test(parserCases, lambda source: Lox().run(source))

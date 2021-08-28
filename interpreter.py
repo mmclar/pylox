@@ -6,15 +6,20 @@ from exprvisitor import ExprVisitor
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
-    def interpret(self, expression):
+    def interpret(self, statements):
+        result = None
         try:
-            value = self.evaluate(expression)
-            return value
-        except:
-            pass
+            for statement in statements:
+                result = self.execute(statement)
+        except RuntimeError:
+            raise
+        return result
 
     def evaluate(self, expression):
         return expression.accept(self)
+
+    def execute(self, stmt):
+        return stmt.accept(self)
 
     # Implement ExprVisitor
     def visitBinaryExpr(self, expr: Binary):
@@ -55,7 +60,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     # Implement StmtVisitor
     def visitExpressionStmt(self, stmt: Expression):
-        self.evaluate(stmt.expression)
+        return self.evaluate(stmt.expression)
 
     def visitPrintStmt(self, stmt: Print):
         value = self.evaluate(stmt.expression)
