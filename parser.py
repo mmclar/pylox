@@ -175,16 +175,16 @@ class Parser:
             if self.previous().type == TokenType.SEMICOLON:
                 return
 
-        if self.peek().type in [
-            TokenType.CLASS,
-            TokenType.FUN,
-            TokenType.VAR,
-            TokenType.FOR,
-            TokenType.IF,
-            TokenType.WHILE,
-            TokenType.PRINT,
-            TokenType.RETURN,
-        ]:
-            return
+            if self.peek().type in [
+                TokenType.CLASS,
+                TokenType.FUN,
+                TokenType.VAR,
+                TokenType.FOR,
+                TokenType.IF,
+                TokenType.WHILE,
+                TokenType.PRINT,
+                TokenType.RETURN,
+            ]:
+                return
 
-        self.advance()
+            self.advance()
