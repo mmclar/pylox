@@ -1,5 +1,13 @@
+from dataclasses import dataclass
+
 from tokens import Token
 from util import Errors
+
+
+@dataclass
+class LoxRuntimeError(Exception):
+    token: Token
+    message: str
 
 
 class Environment:
@@ -15,7 +23,7 @@ class Environment:
             return self.values[name.lexeme]
         if self.enclosing:
             return self.enclosing.get(name)
-        Errors.error(f"Undefined variable '{name.lexeme}'.", name)
+        raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
 
     def assign(self, name: Token, value):
         if name.lexeme in self.values:
@@ -23,5 +31,4 @@ class Environment:
         elif self.enclosing:
             self.enclosing.assign(name, value)
         else:
-            Errors.error(f"Undefined variable '{name.lexeme}'.", name)
-
+            raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")

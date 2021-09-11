@@ -1,7 +1,9 @@
-from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical
-from statements import Print, Expression, Var, Block, If, While
+from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call
+from statements import Print, Expression, Var, Block, If, While, Function, Return
 from tokens import TokenType
 from util import Errors
+
+MAX_ARITY = 255
 
 
 class Parser:
@@ -26,6 +28,8 @@ class Parser:
             return self.ifStatement()
         if self.match(TokenType.PRINT):
             return self.printStatement()
+        if self.match(TokenType.RETURN):
+            return self.returnStatement();
         if self.match(TokenType.WHILE):
             return self.whileStatement()
         if self.match(TokenType.LEFT_BRACE):
@@ -71,6 +75,12 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Print(value)
 
+    def returnStatement(self):
+        keyword = self.previous()
+        value = self.expression() if not self.check(TokenType.SEMICOLON) else None
+        self.consume(TokenType.SEMICOLON, "Expect ';' after return value.")
+        return Return(keyword, value)
+
     def varDeclaration(self):
         name = self.consume(TokenType.IDENTIFIER, 'Expect variable name.')
         initializer = None
@@ -90,6 +100,22 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after expression.")
         return Expression(value)
+
+    def function(self, kind):
+        name = self.consume(TokenType.IDENTIFIER, f'Expect {kind} name.')
+        self.consume(TokenType.LEFT_PAREN, f"Expect '(' after {kind} name.")
+        parameters = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(parameters) > MAX_ARITY:
+                    self.error(self.peek(), f"Can't have more than {MAX_ARITY} parameters.")
+                parameters.append(self.consume(TokenType.IDENTIFIER, 'Expect parameter name.'))
+                if not self.match(TokenType.COMMA):
+                    break
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        self.consume(TokenType.LEFT_BRACE, f"Expect '{{' before {kind} body.")
+        body = self.block()
+        return Function(name, parameters, body)
 
     def block(self):
         statements = []
@@ -134,6 +160,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match(TokenType.FUN):
+                return self.function("function")
             if self.match(TokenType.VAR):
                 return self.varDeclaration()
             return self.statement()
@@ -177,7 +205,28 @@ class Parser:
             operator = self.previous()
             right = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+
+    def finishCall(self, callee: Expr):
+        arguments = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(arguments) > MAX_ARITY:
+                    self.error(self.peek(), f"Can't have more than {MAX_ARITY} arguments.")
+                arguments.append(self.expression())
+                if not self.match(TokenType.COMMA):
+                    break
+        paren = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+        return Call(callee, paren, arguments)
+
+    def call(self):
+        expr = self.primary()
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finishCall(expr)
+            else:
+                break
+        return expr
 
     def primary(self):
         if self.match(TokenType.FALSE):
