@@ -20,6 +20,13 @@ class Expression(Stmt):
 
 
 @dataclass
+class If(Stmt):
+    condition: Expr
+    thenBranch: Stmt
+    elseBranch: Stmt
+
+
+@dataclass
 class Print(Stmt):
     expression: Expr
 
@@ -28,3 +35,9 @@ class Print(Stmt):
 class Var(Stmt):
     name: Token
     initializer: Expr
+
+
+@dataclass
+class While(Stmt):
+    condition: Expr
+    body: Stmt

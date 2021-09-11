@@ -1,6 +1,6 @@
 from environment import Environment
-from expressions import Binary, Grouping, Literal, Unary, Variable, Assign
-from statements import Print, Expression, Var, Block
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical
+from statements import Print, Expression, Var, Block, If, While
 from stmtvisitor import StmtVisitor
 from tokens import TokenType
 from exprvisitor import ExprVisitor
@@ -69,6 +69,19 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visitLiteralExpr(self, expr: Literal):
         return expr.value
 
+    def visitLogicalExpr(self, expr: Logical):
+        left = self.evaluate(expr.left)
+
+        # Don't evaluate right if left side of OR is true or if left side of AND is false.
+        if expr.operator.type == TokenType.OR:
+            if left:
+                return left
+        else:
+            if not left:
+                return left
+
+        return self.evaluate(expr.right)
+
     def visitUnaryExpr(self, expr: Unary):
         right = self.evaluate(expr.right)
         if expr.operator.type == TokenType.MINUS:
@@ -83,6 +96,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visitExpressionStmt(self, stmt: Expression):
         return self.evaluate(stmt.expression)  # Return evaluated expression for tests
 
+    def visitIfStmt(self, stmt: If):
+        if self.evaluate(stmt.condition):
+            self.execute(stmt.thenBranch)
+        elif stmt.elseBranch:
+            self.execute(stmt.elseBranch)
+
     def visitPrintStmt(self, stmt: Print):
         value = self.evaluate(stmt.expression)
         print(value)
@@ -91,8 +110,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = None
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
-
         self.environment.define(stmt.name.lexeme, value)
+
+    def visitWhileStmt(self, stmt: While):
+        while self.evaluate(stmt.condition):
+            self.execute(stmt.body)
 
     def visitAssignExpr(self, expr: Assign):
         value = self.evaluate(expr.value)
