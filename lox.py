@@ -15,7 +15,7 @@ class Lox:
             print('Usage: pylox [script]')
             sys.exit(64)
         elif len(args) == 2:
-            # self.runFile(args[1])
+            self.runFile(args[1])
             pass
         else:
             self.runPrompt()
@@ -34,8 +34,8 @@ class Lox:
                 break
 
     def runFile(self, path):
-        with open(path) as sourceFile:
-            self.run(sourceFile.readlines())
+        with open(path, 'r') as sourceFile:
+            self.run(sourceFile.read())
 
     def run(self, source):
         scanner = Scanner(source)

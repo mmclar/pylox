@@ -9,6 +9,12 @@ class Expr:
 
 
 @dataclass
+class Assign(Expr):
+    name: Token
+    value: Expr
+
+
+@dataclass
 class Binary(Expr):
     left: 'Expr'
     operator: Token
@@ -29,3 +35,8 @@ class Literal(Expr):
 class Unary(Expr):
     operator: Token
     right: 'Expr'
+
+
+@dataclass
+class Variable(Expr):
+    name: Token

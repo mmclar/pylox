@@ -1,11 +1,16 @@
-from expressions import Binary, Grouping, Literal, Unary
-from statements import Print, Expression
+from environment import Environment
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign
+from statements import Print, Expression, Var, Block
 from stmtvisitor import StmtVisitor
 from tokens import TokenType
 from exprvisitor import ExprVisitor
+from util import Errors
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
+    def __init__(self):
+        self.environment = Environment(None)
+
     def interpret(self, statements):
         result = None
         try:
@@ -13,7 +18,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 result = self.execute(statement)
         except RuntimeError:
             raise
-        return result
+        return result  # Return the result, for tests
 
     def evaluate(self, expression):
         return expression.accept(self)
@@ -21,7 +26,20 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def execute(self, stmt):
         return stmt.accept(self)
 
+    def executeBlock(self, statements, environment: Environment):
+        previous = self.environment
+        try:
+            self.environment = environment
+            for statement in statements:
+                self.execute(statement)
+        except:
+            Errors.error(statements)
+        self.environment = previous
+
     # Implement ExprVisitor
+    def visitBlockStmt(self, stmt: Block):
+        self.executeBlock(stmt.statements, Environment(self.environment))
+
     def visitBinaryExpr(self, expr: Binary):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
@@ -58,11 +76,26 @@ class Interpreter(ExprVisitor, StmtVisitor):
         if expr.operator.type == TokenType.BANG:
             return not right
 
+    def visitVariableExpr(self, expr: Variable):
+        return self.environment.get(expr.name)
+
     # Implement StmtVisitor
     def visitExpressionStmt(self, stmt: Expression):
-        return self.evaluate(stmt.expression)
+        return self.evaluate(stmt.expression)  # Return evaluated expression for tests
 
     def visitPrintStmt(self, stmt: Print):
         value = self.evaluate(stmt.expression)
         print(value)
+
+    def visitVarStmt(self, stmt: Var):
+        value = None
+        if stmt.initializer:
+            value = self.evaluate(stmt.initializer)
+
+        self.environment.define(stmt.name.lexeme, value)
+
+    def visitAssignExpr(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
 
