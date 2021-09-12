@@ -8,32 +8,32 @@ class Expr:
         return getattr(visitor, f'visit{type(self).__name__}Expr')(self)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Assign(Expr):
     name: Token
     value: Expr
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Binary(Expr):
     left: 'Expr'
     operator: Token
     right: 'Expr'
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Call(Expr):
     callee: Expr
     paren: Token
     arguments: list
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Grouping(Expr):
     expression: Expr
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Literal(Expr):
     value: object
 
@@ -51,6 +51,6 @@ class Unary(Expr):
     right: 'Expr'
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Variable(Expr):
     name: Token

@@ -3,6 +3,7 @@ import sys
 from astprinter import AstPrinter
 from interpreter import Interpreter
 from parser import Parser
+from resolver import Resolver
 from scanner import Scanner
 from util import Errors
 
@@ -42,6 +43,11 @@ class Lox:
         tokens = scanner.scanTokens()
         parser = Parser(tokens)
         statements = parser.parse()
+
+        if Errors.hadError:
+            return
+
+        Resolver(self.interpreter).resolveStatements(statements)
 
         if Errors.hadError:
             return

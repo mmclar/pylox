@@ -135,7 +135,7 @@ class Parser:
                 name = expr.name
                 return Assign(name, value)
 
-            Errors.error("Invalid assignment target.", token=equals)
+            Errors.error("Invalid assignment target.", equals)
 
         return expr
 
@@ -278,7 +278,7 @@ class Parser:
 
     @staticmethod
     def error(token, message):
-        Errors.error(message, token=token)
+        Errors.error(message, token)
         return Parser.ParseError()
 
     def synchronize(self):

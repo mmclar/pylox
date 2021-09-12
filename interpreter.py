@@ -1,9 +1,9 @@
 from environment import Environment
-from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr
 from functions import Clock, LoxFunction, ReturnException
 from statements import Print, Expression, Var, Block, If, While, Function, Return
 from stmtvisitor import StmtVisitor
-from tokens import TokenType
+from tokens import TokenType, Token
 from exprvisitor import ExprVisitor
 
 
@@ -11,6 +11,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def __init__(self):
         self.globals = Environment(None)
         self.environment = self.globals
+        self.locals = {}
 
         self.globals.define('clock', Clock())
 
@@ -38,10 +39,17 @@ class Interpreter(ExprVisitor, StmtVisitor):
         finally:
             self.environment = previous
 
+    def resolve(self, expr: Expr, depth):
+        self.locals[expr] = depth
+
     # Implement ExprVisitor
     def visitAssignExpr(self, expr: Assign):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        distance = self.locals.get(expr)
+        if distance is not None:
+            self.environment.assignAt(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
         return value
 
     def visitBinaryExpr(self, expr: Binary):
@@ -104,7 +112,13 @@ class Interpreter(ExprVisitor, StmtVisitor):
             return not right
 
     def visitVariableExpr(self, expr: Variable):
-        return self.environment.get(expr.name)
+        return self.lookupVariable(expr.name, expr)
+
+    def lookupVariable(self, name: Token, expr: Expr):
+        distance = self.locals.get(expr)
+        if distance is not None:
+            return self.environment.getAt(distance, name.lexeme)
+        return self.globals.get(name)
 
     # Implement StmtVisitor
     def visitBlockStmt(self, stmt: Block):

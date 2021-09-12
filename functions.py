@@ -1,5 +1,6 @@
 import datetime
 from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Any
 
 from environment import Environment
@@ -9,6 +10,11 @@ from statements import Function
 @dataclass
 class ReturnException(Exception):
     value: Any
+
+
+class FunctionType(Enum):
+    NONE = auto()
+    FUNCTION = auto()
 
 
 class LoxFunction:
