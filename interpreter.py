@@ -1,14 +1,10 @@
-from dataclasses import dataclass
-
-from environment import Environment, LoxRuntimeError
+from environment import Environment
 from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call
 from functions import Clock, LoxFunction, ReturnException
 from statements import Print, Expression, Var, Block, If, While, Function, Return
 from stmtvisitor import StmtVisitor
-from tokens import TokenType, Token
+from tokens import TokenType
 from exprvisitor import ExprVisitor
-from util import Errors
-
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
@@ -145,4 +141,3 @@ class Interpreter(ExprVisitor, StmtVisitor):
         value = self.evaluate(expr.value)
         self.environment.assign(expr.name, value)
         return value
-
