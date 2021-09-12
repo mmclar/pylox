@@ -1,10 +1,10 @@
 from typing import Union
 
-from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign
+from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set
 from exprvisitor import ExprVisitor
 from functions import FunctionType
 from interpreter import Interpreter
-from statements import Block, Print, Expression, Stmt, While, Var, Return, If, Function
+from statements import Block, Print, Expression, Stmt, While, Var, Return, If, Function, Class
 from stmtvisitor import StmtVisitor
 from tokens import Token
 from util import Errors
@@ -75,6 +75,9 @@ class Resolver(ExprVisitor, StmtVisitor):
         for argument in expr.arguments:
             self.resolve(argument)
 
+    def visitGetExpr(self, expr: Get):
+        self.resolve(expr.object)
+
     def visitGroupingExpr(self, expr: Grouping):
         self.resolve(expr.expression)
 
@@ -84,6 +87,10 @@ class Resolver(ExprVisitor, StmtVisitor):
     def visitLogicalExpr(self, expr: Logical):
         self.resolve(expr.left)
         self.resolve(expr.right)
+
+    def visitSetExpr(self, expr: Set):
+        self.resolve(expr.value)
+        self.resolve(expr.object)
 
     def visitUnaryExpr(self, expr: Unary):
         self.resolve(expr.right)
@@ -98,6 +105,10 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.beginScope()
         self.resolveStatements(stmt.statements)
         self.endScope()
+
+    def visitClassStmt(self, stmt: Class):
+        self.declare(stmt.name)
+        self.define(stmt.name)
 
     def visitExpressionStmt(self, stmt: Expression):
         self.resolve(stmt.expression)

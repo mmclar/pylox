@@ -101,6 +101,7 @@ class Scanner:
             '{': TokenType.LEFT_BRACE,
             '}': TokenType.RIGHT_BRACE,
             ',': TokenType.COMMA,
+            '.': TokenType.DOT,
             '-': TokenType.MINUS,
             '+': TokenType.PLUS,
             ';': TokenType.SEMICOLON,

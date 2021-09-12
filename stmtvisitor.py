@@ -1,11 +1,15 @@
 import abc
 
-from statements import Expression, Print, Block, Function, If, Return, Var, While
+from statements import Expression, Print, Block, Function, If, Return, Var, While, Class
 
 
 class StmtVisitor(abc.ABC):
     @abc.abstractmethod
     def visitBlockStmt(self, stmt: Block):
+        pass
+
+    @abc.abstractmethod
+    def visitClassStmt(self, stmt: Class):
         pass
 
     @abc.abstractmethod

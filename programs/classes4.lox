@@ -1,0 +1,6 @@
+class Bagel {}
+var b = Bagel();
+b.isEverything = true;
+b.isWholeWheat = false;
+print b.isEverything;
+print b.isWholeWheat;

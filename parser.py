@@ -1,5 +1,5 @@
-from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call
-from statements import Print, Expression, Var, Block, If, While, Function, Return
+from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call, Get, Set
+from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from tokens import TokenType
 from util import Errors
 
@@ -132,8 +132,9 @@ class Parser:
             value = self.assignment()
 
             if isinstance(expr, Variable):
-                name = expr.name
-                return Assign(name, value)
+                return Assign(expr.name, value)
+            elif isinstance(expr, Get):
+                return Set(expr.object, expr.name, value)
 
             Errors.error("Invalid assignment target.", equals)
 
@@ -160,6 +161,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match(TokenType.CLASS):
+                return self.classDeclaration()
             if self.match(TokenType.FUN):
                 return self.function("function")
             if self.match(TokenType.VAR):
@@ -167,6 +170,15 @@ class Parser:
             return self.statement()
         except:  # really want to catch ParseError here
             self.synchronize()
+
+    def classDeclaration(self):
+        name = self.consume(TokenType.IDENTIFIER, "Expect class name.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before class body.")
+        methods = []
+        while not (self.check(TokenType.RIGHT_BRACE) or self.isAtEnd()):
+            methods.append(self.function("method"))
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+        return Class(name, methods)
 
     def equality(self):
         expr = self.comparison()
@@ -224,6 +236,9 @@ class Parser:
         while True:
             if self.match(TokenType.LEFT_PAREN):
                 expr = self.finishCall(expr)
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
+                expr = Get(expr, name)
             else:
                 break
         return expr

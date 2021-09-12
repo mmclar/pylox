@@ -1,10 +1,12 @@
-from environment import Environment
-from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr
+from classes import LoxClass, LoxInstance
+from environment import Environment, LoxRuntimeError
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set
 from functions import Clock, LoxFunction, ReturnException
-from statements import Print, Expression, Var, Block, If, While, Function, Return
+from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from stmtvisitor import StmtVisitor
 from tokens import TokenType, Token
 from exprvisitor import ExprVisitor
+from util import Errors
 
 
 class Interpreter(ExprVisitor, StmtVisitor):
@@ -20,8 +22,8 @@ class Interpreter(ExprVisitor, StmtVisitor):
         try:
             for statement in statements:
                 result = self.execute(statement)
-        except RuntimeError:
-            raise
+        except LoxRuntimeError as ex:
+            Errors.error(ex.message, ex.token)
         return result  # Return the result, for tests
 
     def evaluate(self, expression):
@@ -85,6 +87,12 @@ class Interpreter(ExprVisitor, StmtVisitor):
         except AttributeError:
             raise Exception('Can only call functions and classes.')
 
+    def visitGetExpr(self, expr: Get):
+        obj = self.evaluate(expr.object)
+        if isinstance(obj, LoxInstance):
+            return obj.get(expr.name)
+        raise LoxRuntimeError('Only instances may have properties.')
+
     def visitGroupingExpr(self, expr: Grouping):
         return self.evaluate(expr.expression)
 
@@ -103,6 +111,14 @@ class Interpreter(ExprVisitor, StmtVisitor):
                 return left
 
         return self.evaluate(expr.right)
+
+    def visitSetExpr(self, expr: Set):
+        obj = self.evaluate(expr.object)
+        if not isinstance(obj, LoxInstance):
+            raise LoxRuntimeError(expr.name, 'Only instances have fields.')
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
 
     def visitUnaryExpr(self, expr: Unary):
         right = self.evaluate(expr.right)
@@ -123,6 +139,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
     # Implement StmtVisitor
     def visitBlockStmt(self, stmt: Block):
         self.executeBlock(stmt.statements, Environment(self.environment))
+
+    def visitClassStmt(self, stmt: Class):
+        self.environment.define(stmt.name.lexeme, None)
+        cls = LoxClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, cls)
 
     def visitExpressionStmt(self, stmt: Expression):
         return self.evaluate(stmt.expression)  # Return evaluated expression for tests

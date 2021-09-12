@@ -13,7 +13,7 @@ class Errors:
     def error(message, token: Token):
         Errors.hadError = True
         if token:
-            where = ' at end' if token.type == TokenType.EOF else f'at "{token.lexeme}"'
+            where = ' end' if token.type == TokenType.EOF else f'"{token.lexeme}"'
             line = token.line
             Errors.eprint(f'[line {line} at {where}] Error: {message}')
         else:

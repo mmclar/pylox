@@ -29,6 +29,12 @@ class Call(Expr):
 
 
 @dataclass(unsafe_hash=True)
+class Get(Expr):
+    object: Expr
+    name: Token
+
+
+@dataclass(unsafe_hash=True)
 class Grouping(Expr):
     expression: Expr
 
@@ -43,6 +49,13 @@ class Logical(Expr):
     left: Expr
     operator: Token
     right: Expr
+
+
+@dataclass(unsafe_hash=True)
+class Set(Expr):
+    object: Expr
+    name: Token
+    value: Expr
 
 
 @dataclass

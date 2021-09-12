@@ -15,6 +15,12 @@ class Block(Stmt):
 
 
 @dataclass
+class Class(Stmt):
+    name: Token
+    methods: list
+
+
+@dataclass
 class Expression(Stmt):
     expression: Expr
 
