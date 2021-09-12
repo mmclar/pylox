@@ -5,15 +5,11 @@ from statements import Expression, Print, Block, Function, If, Return, Var, Whil
 
 class StmtVisitor(abc.ABC):
     @abc.abstractmethod
-    def visitExpressionStmt(self, stmt: Expression):
-        pass
-
-    @abc.abstractmethod
-    def visitPrintStmt(self, stmt: Print):
-        pass
-
-    @abc.abstractmethod
     def visitBlockStmt(self, stmt: Block):
+        pass
+
+    @abc.abstractmethod
+    def visitExpressionStmt(self, stmt: Expression):
         pass
 
     @abc.abstractmethod
@@ -22,6 +18,10 @@ class StmtVisitor(abc.ABC):
 
     @abc.abstractmethod
     def visitIfStmt(self, stmt: If):
+        pass
+
+    @abc.abstractmethod
+    def visitPrintStmt(self, stmt: Print):
         pass
 
     @abc.abstractmethod
