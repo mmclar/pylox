@@ -1,11 +1,19 @@
 import abc
 
-from expressions import Binary, Grouping, Literal, Unary
+from expressions import Binary, Grouping, Literal, Unary, Assign, Call, Logical, Variable
 
 
 class ExprVisitor(abc.ABC):
     @abc.abstractmethod
+    def visitAssignExpr(self, expr: Assign):
+        pass
+
+    @abc.abstractmethod
     def visitBinaryExpr(self, expr: Binary):
+        pass
+
+    @abc.abstractmethod
+    def visitCallExpr(self, expr: Call):
         pass
 
     @abc.abstractmethod
@@ -17,5 +25,13 @@ class ExprVisitor(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def visitLogicalExpr(self, expr: Logical):
+        pass
+
+    @abc.abstractmethod
     def visitUnaryExpr(self, expr: Unary):
+        pass
+
+    @abc.abstractmethod
+    def visitVariableExpr(self, expr: Variable):
         pass

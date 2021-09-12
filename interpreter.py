@@ -39,8 +39,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
             self.environment = previous
 
     # Implement ExprVisitor
-    def visitBlockStmt(self, stmt: Block):
-        self.executeBlock(stmt.statements, Environment(self.environment))
+    def visitAssignExpr(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
 
     def visitBinaryExpr(self, expr: Binary):
         left = self.evaluate(expr.left)
@@ -105,6 +107,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return self.environment.get(expr.name)
 
     # Implement StmtVisitor
+    def visitBlockStmt(self, stmt: Block):
+        self.executeBlock(stmt.statements, Environment(self.environment))
+
     def visitExpressionStmt(self, stmt: Expression):
         return self.evaluate(stmt.expression)  # Return evaluated expression for tests
 
@@ -136,8 +141,3 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visitWhileStmt(self, stmt: While):
         while self.evaluate(stmt.condition):
             self.execute(stmt.body)
-
-    def visitAssignExpr(self, expr: Assign):
-        value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
-        return value
