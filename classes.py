@@ -3,6 +3,8 @@ from enum import Enum, auto
 from environment import LoxRuntimeError
 from tokens import Token
 
+INIT_METHOD_NAME = 'init'
+
 
 class ClassType(Enum):
     NONE = auto()
@@ -21,9 +23,14 @@ class LoxClass:
         return self.methods.get(name)
 
     def call(self, interpreter, arguments):
-        return LoxInstance(self)
+        instance = LoxInstance(self)
+        if initializer := self.findMethod(INIT_METHOD_NAME):
+            initializer.bind(instance).call(interpreter, arguments)
+        return instance
 
     def arity(self):
+        if initializer := self.findMethod(INIT_METHOD_NAME):
+            return initializer.arity()
         return 0
 
 

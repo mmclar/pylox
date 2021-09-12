@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any
 
-from classes import LoxInstance
+from classes import LoxInstance, INIT_METHOD_NAME
 from environment import Environment
 from statements import Function
 
@@ -16,18 +16,20 @@ class ReturnException(Exception):
 class FunctionType(Enum):
     NONE = auto()
     FUNCTION = auto()
+    INITIALIZER = auto()
     METHOD = auto()
 
 
 class LoxFunction:
-    def __init__(self, declaration: Function, closure: Environment):
-        self.declaration = declaration
+    def __init__(self, declaration: Function, closure: Environment, isInitializer):
+        self.isInitializer = isInitializer
         self.closure = closure
+        self.declaration = declaration
 
     def bind(self, instance: LoxInstance):
         environment = Environment(self.closure)
         environment.define('this', instance)
-        return LoxFunction(self.declaration, environment)
+        return LoxFunction(self.declaration, environment, self.isInitializer)
 
     def arity(self):
         return len(self.declaration.params)
@@ -39,7 +41,9 @@ class LoxFunction:
         try:
             interpreter.executeBlock(self.declaration.body, environment)
         except ReturnException as returnValue:
-            return returnValue.value
+            return self.closure.getAt(0, INIT_METHOD_NAME) if self.isInitializer else returnValue.value
+        if self.isInitializer:
+            return self.closure.getAt(0, INIT_METHOD_NAME)
 
 
 class Clock:

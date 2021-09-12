@@ -1,6 +1,6 @@
 from typing import Union
 
-from classes import ClassType
+from classes import ClassType, INIT_METHOD_NAME
 from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set, This
 from exprvisitor import ExprVisitor
 from functions import FunctionType
@@ -123,7 +123,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.beginScope()
         self.curScope['this'] = True
         for method in stmt.methods:
-            self.resolveFunction(method, FunctionType.METHOD)
+            declarationFunctionType = (
+                FunctionType.INITIALIZER
+                if method.name.lexeme == INIT_METHOD_NAME
+                else FunctionType.METHOD
+            )
+            self.resolveFunction(method, declarationFunctionType)
         self.endScope()
 
         self.currentClassType = enclosingClassType
@@ -149,6 +154,8 @@ class Resolver(ExprVisitor, StmtVisitor):
         if self.currentFunctionType == FunctionType.NONE:
             Errors.error("Can't return from top-level code.", stmt.keyword)
         if stmt.value:
+            if self.currentFunctionType == FunctionType.INITIALIZER:
+                Errors.error("Can't return a value from an initializer.", stmt.keyword)
             self.resolve(stmt.value)
 
     def visitVarStmt(self, stmt: Var):

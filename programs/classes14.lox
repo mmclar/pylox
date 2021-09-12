@@ -1,0 +1,13 @@
+class Bar {
+    init() {
+        return; // can return nothing
+    }
+}
+
+//class Foo {
+//  init() {
+//    return "can't return something";
+//  }
+//}
+
+var bar = Bar();

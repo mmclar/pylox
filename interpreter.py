@@ -1,4 +1,4 @@
-from classes import LoxClass, LoxInstance
+from classes import LoxClass, LoxInstance, INIT_METHOD_NAME
 from environment import Environment, LoxRuntimeError
 from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set, This
 from functions import Clock, LoxFunction, ReturnException
@@ -92,7 +92,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj = self.evaluate(expr.object)
         if isinstance(obj, LoxInstance):
             return obj.get(expr.name)
-        raise LoxRuntimeError('Only instances may have properties.')
+        raise LoxRuntimeError(expr.name, 'Only instances may have properties.')
 
     def visitGroupingExpr(self, expr: Grouping):
         return self.evaluate(expr.expression)
@@ -147,7 +147,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
     def visitClassStmt(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
         for method in stmt.methods:
-            function = LoxFunction(method, self.environment)
+            function = LoxFunction(method, self.environment, method.name.lexeme == INIT_METHOD_NAME)
             self.methods[method.name.lexeme] = function
         cls = LoxClass(stmt.name.lexeme, self.methods)
         self.environment.assign(stmt.name, cls)
@@ -156,7 +156,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         return self.evaluate(stmt.expression)  # Return evaluated expression for tests
 
     def visitFunctionStmt(self, stmt: Function):
-        function = LoxFunction(stmt, self.environment)
+        function = LoxFunction(stmt, self.environment, False)
         self.environment.define(stmt.name.lexeme, function)
 
     def visitIfStmt(self, stmt: If):
