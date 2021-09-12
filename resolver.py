@@ -118,7 +118,7 @@ class Resolver(ExprVisitor, StmtVisitor):
 
     def visitReturnStmt(self, stmt: Return):
         if self.currentFunctionType == FunctionType.NONE:
-            Errors.error("Can't return from top-level code.", line=stmt.keyword.line)
+            Errors.error("Can't return from top-level code.", stmt.keyword)
         if stmt.value:
             self.resolve(stmt.value)
 
