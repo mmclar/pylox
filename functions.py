@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any
 
+from classes import LoxInstance
 from environment import Environment
 from statements import Function
 
@@ -15,12 +16,18 @@ class ReturnException(Exception):
 class FunctionType(Enum):
     NONE = auto()
     FUNCTION = auto()
+    METHOD = auto()
 
 
 class LoxFunction:
     def __init__(self, declaration: Function, closure: Environment):
         self.declaration = declaration
         self.closure = closure
+
+    def bind(self, instance: LoxInstance):
+        environment = Environment(self.closure)
+        environment.define('this', instance)
+        return LoxFunction(self.declaration, environment)
 
     def arity(self):
         return len(self.declaration.params)

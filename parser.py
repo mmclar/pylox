@@ -1,4 +1,4 @@
-from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call, Get, Set
+from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call, Get, Set, This
 from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from tokens import TokenType
 from util import Errors
@@ -252,6 +252,8 @@ class Parser:
             return Literal(None)
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
+        if self.match(TokenType.THIS):
+            return This(self.previous())
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
         if self.match(TokenType.LEFT_PAREN):

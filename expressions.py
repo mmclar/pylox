@@ -58,6 +58,11 @@ class Set(Expr):
     value: Expr
 
 
+@dataclass(unsafe_hash=True)
+class This(Expr):
+    keyword: Token
+
+
 @dataclass
 class Unary(Expr):
     operator: Token

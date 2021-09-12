@@ -1,6 +1,7 @@
 from typing import Union
 
-from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set
+from classes import ClassType
+from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set, This
 from exprvisitor import ExprVisitor
 from functions import FunctionType
 from interpreter import Interpreter
@@ -15,6 +16,7 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.interpreter = interpreter
         self.scopes = []
         self.currentFunctionType = FunctionType.NONE
+        self.currentClassType = ClassType.NONE
 
     def resolveStatements(self, statements):
         for statement in statements:
@@ -92,6 +94,11 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(expr.value)
         self.resolve(expr.object)
 
+    def visitThisExpr(self, expr: This):
+        if self.currentClassType == ClassType.NONE:
+            Errors.error("Can't use 'this' outside of a class.", expr.keyword)
+        self.resolveLocal(expr, expr.keyword)
+
     def visitUnaryExpr(self, expr: Unary):
         self.resolve(expr.right)
 
@@ -107,8 +114,19 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.endScope()
 
     def visitClassStmt(self, stmt: Class):
+        enclosingClassType = self.currentClassType
+        self.currentClassType = ClassType.CLASS
+
         self.declare(stmt.name)
         self.define(stmt.name)
+
+        self.beginScope()
+        self.curScope['this'] = True
+        for method in stmt.methods:
+            self.resolveFunction(method, FunctionType.METHOD)
+        self.endScope()
+
+        self.currentClassType = enclosingClassType
 
     def visitExpressionStmt(self, stmt: Expression):
         self.resolve(stmt.expression)

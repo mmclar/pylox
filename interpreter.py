@@ -1,6 +1,6 @@
 from classes import LoxClass, LoxInstance
 from environment import Environment, LoxRuntimeError
-from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set, This
 from functions import Clock, LoxFunction, ReturnException
 from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from stmtvisitor import StmtVisitor
@@ -14,6 +14,7 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.globals = Environment(None)
         self.environment = self.globals
         self.locals = {}
+        self.methods = {}
 
         self.globals.define('clock', Clock())
 
@@ -120,6 +121,9 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj.set(expr.name, value)
         return value
 
+    def visitThisExpr(self, expr: This):
+        return self.lookupVariable(expr.keyword, expr)
+
     def visitUnaryExpr(self, expr: Unary):
         right = self.evaluate(expr.right)
         if expr.operator.type == TokenType.MINUS:
@@ -142,7 +146,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visitClassStmt(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
-        cls = LoxClass(stmt.name.lexeme)
+        for method in stmt.methods:
+            function = LoxFunction(method, self.environment)
+            self.methods[method.name.lexeme] = function
+        cls = LoxClass(stmt.name.lexeme, self.methods)
         self.environment.assign(stmt.name, cls)
 
     def visitExpressionStmt(self, stmt: Expression):

@@ -1,0 +1,9 @@
+class C {}
+fun f() {
+    print "in f";
+}
+print C;
+var c = C();
+print c;
+c.f = f;
+c.f();
