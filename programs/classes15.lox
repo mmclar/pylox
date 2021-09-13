@@ -1,0 +1,10 @@
+class A {}
+
+class B {
+    init() {
+        print "B init";
+    }
+}
+
+var a = A();
+var b = B();

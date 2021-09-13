@@ -14,7 +14,6 @@ class Interpreter(ExprVisitor, StmtVisitor):
         self.globals = Environment(None)
         self.environment = self.globals
         self.locals = {}
-        self.methods = {}
 
         self.globals.define('clock', Clock())
 
@@ -146,10 +145,11 @@ class Interpreter(ExprVisitor, StmtVisitor):
 
     def visitClassStmt(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
+        methods = {}
         for method in stmt.methods:
             function = LoxFunction(method, self.environment, method.name.lexeme == INIT_METHOD_NAME)
-            self.methods[method.name.lexeme] = function
-        cls = LoxClass(stmt.name.lexeme, self.methods)
+            methods[method.name.lexeme] = function
+        cls = LoxClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, cls)
 
     def visitExpressionStmt(self, stmt: Expression):
