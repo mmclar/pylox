@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from expressions import Expr
+from expressions import Expr, Variable
 from tokens import Token
 
 
@@ -17,6 +17,7 @@ class Block(Stmt):
 @dataclass
 class Class(Stmt):
     name: Token
+    superclass: Variable
     methods: list
 
 

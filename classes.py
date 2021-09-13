@@ -12,15 +12,18 @@ class ClassType(Enum):
 
 
 class LoxClass:
-    def __init__(self, name, methods):
+    def __init__(self, name, superclass, methods):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def __str__(self):
         return f'{self.name}'
 
     def findMethod(self, name):
-        return self.methods.get(name)
+        return self.methods.get(name) or (
+            self.superclass and self.superclass.findMethod(name)
+        )
 
     def call(self, interpreter, arguments):
         instance = LoxInstance(self)

@@ -120,6 +120,11 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if stmt.superclass:
+            if stmt.name.lexeme == stmt.superclass.name.lexeme:
+                Errors.error("A class can't inherit from itself.", stmt.superclass.name)
+            self.resolve(stmt.superclass)
+
         self.beginScope()
         self.curScope['this'] = True
         for method in stmt.methods:
