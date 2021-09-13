@@ -59,6 +59,12 @@ class Set(Expr):
 
 
 @dataclass(unsafe_hash=True)
+class Super(Expr):
+    keyword: Token
+    method: Token
+
+
+@dataclass(unsafe_hash=True)
 class This(Expr):
     keyword: Token
 

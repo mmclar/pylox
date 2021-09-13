@@ -8,7 +8,8 @@ INIT_METHOD_NAME = 'init'
 
 class ClassType(Enum):
     NONE = auto()
-    CLASS = auto
+    CLASS = auto()
+    SUBCLASS = auto()
 
 
 class LoxClass:

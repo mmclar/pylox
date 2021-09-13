@@ -1,4 +1,4 @@
-from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call, Get, Set, This
+from expressions import Binary, Unary, Literal, Grouping, Variable, Assign, Logical, Expr, Call, Get, Set, This, Super
 from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from tokens import TokenType
 from util import Errors
@@ -259,6 +259,11 @@ class Parser:
             return Literal(None)
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
+        if self.match(TokenType.SUPER):
+            keyword = self.previous()
+            self.consume(TokenType.DOT, "Expect '.' after 'super'.")
+            method = self.consume(TokenType.IDENTIFIER, "Expect superclass method name.")
+            return Super(keyword, method)
         if self.match(TokenType.THIS):
             return This(self.previous())
         if self.match(TokenType.IDENTIFIER):

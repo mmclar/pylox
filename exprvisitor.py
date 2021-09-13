@@ -1,6 +1,6 @@
 import abc
 
-from expressions import Binary, Grouping, Literal, Unary, Assign, Call, Logical, Variable, Get, Set, This
+from expressions import Binary, Grouping, Literal, Unary, Assign, Call, Logical, Variable, Get, Set, This, Super
 
 
 class ExprVisitor(abc.ABC):
@@ -34,6 +34,10 @@ class ExprVisitor(abc.ABC):
 
     @abc.abstractmethod
     def visitSetExpr(self, expr: Set):
+        pass
+
+    @abc.abstractmethod
+    def visitSuperExpr(self,expr: Super):
         pass
 
     @abc.abstractmethod

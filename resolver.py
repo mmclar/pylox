@@ -1,7 +1,7 @@
 from typing import Union
 
 from classes import ClassType, INIT_METHOD_NAME
-from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set, This
+from expressions import Unary, Literal, Grouping, Binary, Expr, Variable, Logical, Call, Assign, Get, Set, This, Super
 from exprvisitor import ExprVisitor
 from functions import FunctionType
 from interpreter import Interpreter
@@ -94,6 +94,13 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.resolve(expr.value)
         self.resolve(expr.object)
 
+    def visitSuperExpr(self,expr: Super):
+        if self.currentClassType == ClassType.NONE:
+            Errors.error("Can't use 'super' token outside of a class.", expr.keyword)
+        elif self.currentClassType != ClassType.SUBCLASS:
+            Errors.error("Can't use 'super' in a class with no superclass.", expr.keyword)
+        self.resolveLocal(expr, expr.keyword)
+
     def visitThisExpr(self, expr: This):
         if self.currentClassType == ClassType.NONE:
             Errors.error("Can't use 'this' outside of a class.", expr.keyword)
@@ -121,9 +128,12 @@ class Resolver(ExprVisitor, StmtVisitor):
         self.define(stmt.name)
 
         if stmt.superclass:
+            self.currentClassType = ClassType.SUBCLASS
             if stmt.name.lexeme == stmt.superclass.name.lexeme:
                 Errors.error("A class can't inherit from itself.", stmt.superclass.name)
             self.resolve(stmt.superclass)
+            self.beginScope()
+            self.curScope['super'] = True
 
         self.beginScope()
         self.curScope['this'] = True
@@ -135,6 +145,9 @@ class Resolver(ExprVisitor, StmtVisitor):
             )
             self.resolveFunction(method, declarationFunctionType)
         self.endScope()
+
+        if stmt.superclass:
+            self.endScope()
 
         self.currentClassType = enclosingClassType
 

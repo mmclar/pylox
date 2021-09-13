@@ -1,6 +1,6 @@
 from classes import LoxClass, LoxInstance, INIT_METHOD_NAME
 from environment import Environment, LoxRuntimeError
-from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set, This
+from expressions import Binary, Grouping, Literal, Unary, Variable, Assign, Logical, Call, Expr, Get, Set, This, Super
 from functions import Clock, LoxFunction, ReturnException
 from statements import Print, Expression, Var, Block, If, While, Function, Return, Class
 from stmtvisitor import StmtVisitor
@@ -120,6 +120,15 @@ class Interpreter(ExprVisitor, StmtVisitor):
         obj.set(expr.name, value)
         return value
 
+    def visitSuperExpr(self,expr: Super):
+        distance = self.locals.get(expr)
+        superclass = self.environment.getAt(distance, 'super')
+        obj = self.environment.getAt(distance - 1, 'this')
+        method = superclass.findMethod(expr.method.lexeme)
+        if not method:
+            raise LoxRuntimeError(expr.method, f"Undefined property '{expr.method.lexeme}'.")
+        return method.bind(obj)
+
     def visitThisExpr(self, expr: This):
         return self.lookupVariable(expr.keyword, expr)
 
@@ -160,6 +169,10 @@ class Interpreter(ExprVisitor, StmtVisitor):
             function = LoxFunction(method, self.environment, method.name.lexeme == INIT_METHOD_NAME)
             methods[method.name.lexeme] = function
         cls = LoxClass(stmt.name.lexeme, superclass, methods)
+
+        if stmt.superclass:
+            self.environment = self.environment.enclosing
+
         self.environment.assign(stmt.name, cls)
 
     def visitExpressionStmt(self, stmt: Expression):
